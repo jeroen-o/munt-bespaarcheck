@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Munt-bespaarcheck</title>
+<meta name="description" content="Doe de hypotheek bespaarcheck en bekijk indicatief of oversluiten van uw hypotheek u geld bespaart.">
+<style>
+  :root{
+    --accent:#0f766e;
+    --accent-dark:#0b5a54;
+    --accent-soft:#e3f4f2;
+    --ink:#161a22;
+    --muted:#52586a;
+    --border:#d6d9e0;
+    --bg:#ffffff;
+    --bg-alt:#f6f7f9;
+    --danger:#b3261e;
+    --danger-bg:#fbeceb;
+    --focus:#0b5a54;
+    --radius:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --accent:#3fcabe;
+      --accent-dark:#2fa89d;
+      --accent-soft:#113a37;
+      --ink:#f1f3f6;
+      --muted:#c3c8d6;
+      --border:#3a3f4d;
+      --bg:#14161c;
+      --bg-alt:#1b1e26;
+      --danger:#ff8a80;
+      --danger-bg:#3a1d1b;
+      --focus:#3fcabe;
+    }
+  }
+  :root[data-theme="dark"]{
+    --accent:#3fcabe;
+    --accent-dark:#2fa89d;
+    --accent-soft:#113a37;
+    --ink:#f1f3f6;
+    --muted:#c3c8d6;
+    --border:#3a3f4d;
+    --bg:#14161c;
+    --bg-alt:#1b1e26;
+    --danger:#ff8a80;
+    --danger-bg:#3a1d1b;
+    --focus:#3fcabe;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  .skip-link{
+    position:absolute;left:-999px;top:0;background:var(--accent);color:#fff;
+    padding:.75rem 1rem;border-radius:0 0 8px 0;z-index:1000;
+  }
+  .skip-link:focus{left:0;}
+  a{color:var(--accent-dark);}
+  :focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  button{font:inherit;}
+
+  header.topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:1rem 1.5rem;border-bottom:1px solid var(--border);
+    flex-wrap:wrap;gap:.75rem;
+  }
+  .brand{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.1rem;letter-spacing:.02em;}
+  .brand .mark{
+    width:34px;height:34px;border-radius:8px;background:var(--accent);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;
+  }
+  .theme-toggle{
+    border:1px solid var(--border);background:var(--bg-alt);color:var(--ink);
+    border-radius:999px;padding:.4rem .9rem;cursor:pointer;font-size:.85rem;
+  }
+
+  .wrap{max-width:900px;margin:0 auto;padding:1.5rem 1.25rem 4rem;}
+
+  ol.steps{
+    list-style:none;margin:0 0 2rem;padding:0;display:flex;gap:.5rem;justify-content:space-between;
+  }
+  ol.steps li{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:.4rem;position:relative;}
+  ol.steps li .num{
+    width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:var(--bg-alt);color:var(--muted);font-weight:700;border:2px solid var(--border);
+  }
+  ol.steps li[data-state="active"] .num{background:var(--accent);border-color:var(--accent);color:#fff;}
+  ol.steps li[data-state="done"] .num{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-dark);}
+  ol.steps li .label{font-size:.78rem;color:var(--muted);max-width:9rem;}
+  ol.steps li[data-state="active"] .label{color:var(--ink);font-weight:700;}
+
+  h1{font-size:1.6rem;margin:0 0 .4rem;}
+  .intro{color:var(--muted);margin:0 0 1.5rem;max-width:60ch;}
+
+  .search-row{display:flex;gap:.5rem;margin-bottom:1.25rem;max-width:30rem;}
+  .search-row input{
+    flex:1;padding:.7rem .9rem;border:1px solid var(--border);border-radius:var(--radius);
+    background:var(--bg);color:var(--ink);font-size:.95rem;
+  }
+  .search-row button{
+    background:var(--accent);color:#fff;border:none;border-radius:var(--radius);
+    padding:.7rem 1.1rem;cursor:pointer;font-weight:700;
+  }
+  .search-row button:hover{background:var(--accent-dark);}
+
+  .tiles{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem;
+  }
+  @media (max-width:640px){.tiles{grid-template-columns:repeat(2,1fr);}}
+  .tile{
+    border:2px solid var(--border);border-radius:var(--radius);background:var(--bg);
+    padding:1rem;min-height:92px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--ink);font-weight:700;text-align:center;font-size:.95rem;
+    transition:border-color .15s, background .15s;
+  }
+  .tile:hover{border-color:var(--accent);}
+  .tile[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);}
+  .tile .check{display:none;color:var(--accent-dark);font-weight:900;margin-left:.35rem;}
+  .tile[aria-pressed="true"] .check{display:inline;}
+
+  .more-row{display:flex;justify-content:flex-end;margin-bottom:1.5rem;}
+  .link-btn{
+    background:none;border:none;color:var(--accent-dark);font-weight:700;cursor:pointer;
+    display:inline-flex;align-items:center;gap:.4rem;padding:.4rem;border-radius:6px;
+  }
+  .link-btn .bubble{
+    width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:.8rem;
+  }
+
+  fieldset{border:none;padding:0;margin:0 0 1.5rem;}
+  legend{font-weight:700;margin-bottom:.75rem;padding:0;font-size:1rem;}
+  .field{margin-bottom:1.1rem;max-width:26rem;}
+  .field label{display:block;font-weight:600;margin-bottom:.35rem;font-size:.92rem;}
+  .field .hint{display:block;color:var(--muted);font-size:.8rem;margin-top:.3rem;}
+  .field input[type="text"],
+  .field input[type="number"],
+  .field select{
+    width:100%;padding:.65rem .8rem;border:1px solid var(--border);border-radius:var(--radius);
+    background:var(--bg);color:var(--ink);font-size:.95rem;
+  }
+  .field input.err{border-color:var(--danger);}
+  .err-msg{color:var(--danger);font-size:.82rem;margin-top:.35rem;display:none;}
+  .field.invalid .err-msg{display:block;}
+
+  .radio-group{display:flex;gap:.75rem;flex-wrap:wrap;}
+  .radio-tile{
+    border:1px solid var(--border);border-radius:var(--radius);padding:.6rem 1rem;
+    display:flex;align-items:center;gap:.5rem;cursor:pointer;background:var(--bg);
+  }
+  .radio-tile:has(input:checked){border-color:var(--accent);background:var(--accent-soft);}
+  .radio-tile input{margin:0;}
+
+  .euro-input{position:relative;}
+  .euro-input span.prefix{
+    position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:var(--muted);
+    pointer-events:none;font-weight:600;
+  }
+  .euro-input input{padding-left:1.8rem;}
+
+  .actions{
+    display:flex;justify-content:space-between;gap:1rem;margin-top:2rem;flex-wrap:wrap;
+  }
+  .btn{
+    border-radius:999px;padding:.8rem 1.6rem;font-weight:800;cursor:pointer;
+    letter-spacing:.03em;font-size:.85rem;text-transform:uppercase;border:2px solid transparent;
+  }
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent-dark);}
+  .btn-primary:disabled{background:var(--bg-alt);color:var(--muted);border-color:var(--border);cursor:not-allowed;}
+  .btn-secondary{background:transparent;color:var(--accent-dark);border-color:var(--accent);}
+  .btn-secondary:hover{background:var(--accent-soft);}
+
+  .result-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+  @media (max-width:640px){.result-cards{grid-template-columns:1fr;}}
+  .card{border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.2rem;background:var(--bg-alt);}
+  .card h3{margin:0 0 .4rem;font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .card .big{font-size:1.5rem;font-weight:800;}
+  .card.highlight{border-color:var(--accent);background:var(--accent-soft);}
+  .card.highlight .big{color:var(--accent-dark);}
+
+  table.breakdown{width:100%;border-collapse:collapse;margin:1.25rem 0;}
+  table.breakdown caption{text-align:left;font-weight:700;margin-bottom:.5rem;}
+  table.breakdown th, table.breakdown td{
+    text-align:left;padding:.55rem .6rem;border-bottom:1px solid var(--border);font-size:.92rem;
+  }
+  table.breakdown td.num, table.breakdown th.num{text-align:right;font-variant-numeric:tabular-nums;}
+  table.breakdown tfoot td{font-weight:800;border-top:2px solid var(--ink);border-bottom:none;}
+
+  .disclaimer{
+    border:1px solid var(--danger);background:var(--danger-bg);border-radius:var(--radius);
+    padding:1rem 1.1rem;margin:1.5rem 0;font-size:.9rem;
+  }
+  .disclaimer strong{display:block;margin-bottom:.3rem;}
+
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+
+  footer{color:var(--muted);font-size:.8rem;text-align:center;padding:1.5rem;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Ga naar inhoud</a>
+
+<header class="topbar">
+  <div class="brand"><span class="mark" aria-hidden="true">M</span> Munt-bespaarcheck</div>
+  <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">Donkere modus</button>
+</header>
+
+<div class="wrap">
+  <ol class="steps" id="stepIndicator" aria-label="Voortgang bespaarcheck"></ol>
+
+  <div aria-live="polite" class="sr-only" id="liveRegion"></div>
+
+  <main id="main">
+    <section id="step1" data-step="1" hidden>
+      <h1>Waar loopt uw huidige hypotheek?</h1>
+      <p class="intro">Doe de hypotheek bespaarcheck en bekijk binnen enkele minuten indicatief of, en zo ja hoeveel, u kunt besparen als u nu uw hypotheek oversluit.</p>
+
+      <div class="search-row" role="search">
+        <label class="sr-only" for="providerSearch">Zoek uw hypotheekverstrekker</label>
+        <input type="text" id="providerSearch" placeholder="Vind uw aanbieder" autocomplete="off">
+        <button type="button" id="providerSearchBtn" aria-label="Zoeken">Zoeken</button>
+      </div>
+
+      <div class="tiles" id="providerTiles" role="group" aria-label="Kies uw hypotheekverstrekker"></div>
+
+      <div class="more-row">
+        <button type="button" class="link-btn" id="moreProviders" aria-expanded="false">
+          <span id="moreProvidersLabel">Volgende 8 verstrekkers</span>
+          <span class="bubble" aria-hidden="true">›</span>
+        </button>
+      </div>
+
+      <div class="field" style="max-width:none;">
+        <label for="providerOther">Staat uw verstrekker er niet bij? Vul de naam in</label>
+        <input type="text" id="providerOther" placeholder="Naam van uw hypotheekverstrekker">
+      </div>
+    </section>
+
+    <section id="step2" data-step="2" hidden>
+      <h1>Wat is de verkoopwaarde van uw huidige woning?</h1>
+      <p class="intro">Dit gebruiken we om de hoogte van uw hypotheek ten opzichte van de woningwaarde (loan-to-value) te bepalen. Dit is van invloed op de rente die u kunt krijgen.</p>
+
+      <div class="field">
+        <label for="woningwaarde">Geschatte verkoopwaarde woning</label>
+        <div class="euro-input">
+          <span class="prefix" aria-hidden="true">€</span>
+          <input type="text" inputmode="numeric" id="woningwaarde" aria-describedby="woningwaarde-hint woningwaarde-err" placeholder="350.000">
+        </div>
+        <span class="hint" id="woningwaarde-hint">Bijvoorbeeld de WOZ-waarde of een recente taxatiewaarde.</span>
+        <span class="err-msg" id="woningwaarde-err" role="alert">Vul een geldig bedrag in, bijvoorbeeld 350.000.</span>
+      </div>
+    </section>
+
+    <section id="step3" data-step="3" hidden>
+      <h1>Wat zijn de gegevens van uw huidige hypotheek?</h1>
+      <p class="intro">Deze gegevens vindt u op uw jaaropgave of in uw hypotheekakte.</p>
+
+      <div class="field">
+        <label for="hoofdsom">Resterende hypotheekschuld</label>
+        <div class="euro-input">
+          <span class="prefix" aria-hidden="true">€</span>
+          <input type="text" inputmode="numeric" id="hoofdsom" aria-describedby="hoofdsom-err" placeholder="280.000">
+        </div>
+        <span class="err-msg" id="hoofdsom-err" role="alert">Vul een geldig bedrag in.</span>
+      </div>
+
+      <div class="field">
+        <label for="huidigeRente">Huidige rente (%)</label>
+        <input type="text" inputmode="decimal" id="huidigeRente" aria-describedby="rente-err" placeholder="4,2">
+        <span class="err-msg" id="rente-err" role="alert">Vul een rentepercentage in, bijvoorbeeld 4,2.</span>
+      </div>
+
+      <div class="field">
+        <label for="restRentevast">Resterende looptijd huidige rentevaste periode (jaren)</label>
+        <input type="text" inputmode="numeric" id="restRentevast" aria-describedby="rvp-err" placeholder="6">
+        <span class="err-msg" id="rvp-err" role="alert">Vul het aantal jaren in, bijvoorbeeld 6.</span>
+      </div>
+
+      <div class="field">
+        <label for="restLooptijd">Resterende totale looptijd hypotheek (jaren)</label>
+        <input type="text" inputmode="numeric" id="restLooptijd" value="30" aria-describedby="looptijd-err">
+        <span class="err-msg" id="looptijd-err" role="alert">Vul het aantal jaren in.</span>
+      </div>
+
+      <fieldset>
+        <legend>Hypotheekvorm</legend>
+        <div class="radio-group" role="radiogroup" aria-label="Hypotheekvorm">
+          <label class="radio-tile"><input type="radio" name="vorm" value="annuiteit" checked> Annuïteit</label>
+          <label class="radio-tile"><input type="radio" name="vorm" value="lineair"> Lineair</label>
+          <label class="radio-tile"><input type="radio" name="vorm" value="aflossingsvrij"> Aflossingsvrij</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Heeft u Nationale Hypotheek Garantie (NHG)?</legend>
+        <div class="radio-group" role="radiogroup" aria-label="NHG">
+          <label class="radio-tile"><input type="radio" name="nhg" value="ja"> Ja</label>
+          <label class="radio-tile"><input type="radio" name="nhg" value="nee" checked> Nee</label>
+        </div>
+      </fieldset>
+    </section>
+
+    <section id="step4" data-step="4" hidden>
+      <h1>Uw overzicht</h1>
+      <p class="intro" id="resultIntro"></p>
+
+      <div class="result-cards" id="resultCards"></div>
+
+      <table class="breakdown" id="breakdownTable">
+        <caption>Vergelijking maandlasten</caption>
+        <thead>
+          <tr><th scope="col">Onderdeel</th><th scope="col" class="num">Huidig</th><th scope="col" class="num">Na oversluiten</th></tr>
+        </thead>
+        <tbody id="breakdownBody"></tbody>
+      </table>
+
+      <div class="disclaimer" role="note">
+        <strong>Let op: indicatieve berekening, geen financieel advies</strong>
+        Deze uitkomst is een indicatie op basis van door u ingevoerde gegevens en een gemiddelde markrente. Het is geen persoonlijk advies zoals bedoeld in de Wet op het financieel toezicht (Wft) en er kunnen geen rechten aan worden ontleend. Boeterente, notariskosten en de daadwerkelijke rente die u krijgt aangeboden kunnen afwijken. Neem voor een persoonlijk advies altijd contact op met een erkend hypotheekadviseur.
+      </div>
+
+      <div style="margin-top:1rem;">
+        <button type="button" class="btn btn-secondary" id="restartBtn">Opnieuw beginnen</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="actions" id="navActions" aria-label="Stapnavigatie">
+    <button type="button" class="btn btn-secondary" id="backBtn">Terug naar begin</button>
+    <button type="button" class="btn btn-primary" id="nextBtn">Verder naar stap 2</button>
+  </nav>
+</div>
+
+<footer>
+  Munt-bespaarcheck · indicatieve hypotheek-bespaarcheck in Hypotheekbond-huisstijl. Geen gegevens worden opgeslagen of verzonden.
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var PROVIDERS = [
+    "Rabobank","ING","Obvion","a.s.r.","AEGON","Florius","HypoTrust","Nationale-Nederlanden",
+    "ABN AMRO","SNS","Woonfonds","BLG Wonen","MUNT Hypotheken","Attens","Tulp Hypotheken","Venn"
+  ];
+
+  var state = {
+    step: 1,
+    provider: null,
+    providerOther: "",
+    woningwaarde: null,
+    hoofdsom: null,
+    huidigeRente: null,
+    restRentevast: null,
+    restLooptijd: 30,
+    vorm: "annuiteit",
+    nhg: "nee",
+    providerPage: 0
+  };
+
+  var stepLabels = [
+    "Uw huidige verstrekker",
+    "Verkoopwaarde huidige woning",
+    "Uw huidige hypotheek",
+    "Uw overzicht"
+  ];
+
+  // ---------- helpers ----------
+  function el(id){ return document.getElementById(id); }
+
+  function fmtEuro(n){
+    return new Intl.NumberFormat('nl-NL', {style:'currency', currency:'EUR', maximumFractionDigits:0}).format(n);
+  }
+  function fmtEuro2(n){
+    return new Intl.NumberFormat('nl-NL', {style:'currency', currency:'EUR', maximumFractionDigits:2}).format(n);
+  }
+  function parseEuro(str){
+    if(!str) return NaN;
+    var cleaned = String(str).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.');
+    return parseFloat(cleaned);
+  }
+  function parseDecimal(str){
+    if(!str) return NaN;
+    var cleaned = String(str).replace(/[^\d,.-]/g,'').replace(',', '.');
+    return parseFloat(cleaned);
+  }
+  function announce(msg){
+    el('liveRegion').textContent = msg;
+  }
+
+  // ---------- theme ----------
+  var themeToggle = el('themeToggle');
+  var savedTheme = null; // no localStorage: in-memory only for this visit
+  function applyTheme(mode){
+    document.documentElement.setAttribute('data-theme', mode);
+    themeToggle.setAttribute('aria-pressed', mode === 'dark' ? 'true' : 'false');
+    themeToggle.textContent = mode === 'dark' ? 'Lichte modus' : 'Donkere modus';
+  }
+  themeToggle.addEventListener('click', function(){
+    savedTheme = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+    applyTheme(savedTheme);
+  });
+
+  // ---------- step indicator ----------
+  function renderSteps(){
+    var ol = el('stepIndicator');
+    ol.innerHTML = '';
+    stepLabels.forEach(function(label, idx){
+      var n = idx + 1;
+      var li = document.createElement('li');
+      var st = n === state.step ? 'active' : (n < state.step ? 'done' : 'todo');
+      li.setAttribute('data-state', st);
+      if(n === state.step){ li.setAttribute('aria-current', 'step'); }
+      li.innerHTML = '<span class="num" aria-hidden="true">' + (st === 'done' ? '✓' : n) + '</span>' +
+                      '<span class="label">' + label + '</span>';
+      ol.appendChild(li);
+    });
+  }
+
+  // ---------- provider tiles ----------
+  function renderProviders(){
+    var container = el('providerTiles');
+    container.innerHTML = '';
+    var query = el('providerSearch').value.trim().toLowerCase();
+    var filtered = query ? PROVIDERS.filter(function(p){ return p.toLowerCase().indexOf(query) !== -1; }) : PROVIDERS;
+    var perPage = 8;
+    var page = state.providerPage;
+    var shown = filtered.slice(0, (page+1) * perPage);
+
+    shown.forEach(function(name, idx){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tile';
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('aria-pressed', state.provider === name ? 'true' : 'false');
+      btn.setAttribute('tabindex', idx === 0 ? '0' : '-1');
+      btn.innerHTML = '<span>' + name + '</span><span class="check" aria-hidden="true">✓</span>';
+      btn.addEventListener('click', function(){
+        selectProvider(name);
+      });
+      container.appendChild(btn);
+    });
+
+    // roving tabindex + arrow key navigation
+    var tiles = Array.prototype.slice.call(container.querySelectorAll('.tile'));
+    container.onkeydown = function(e){
+      var idx = tiles.indexOf(document.activeElement);
+      if(idx === -1) return;
+      var cols = window.matchMedia('(max-width:640px)').matches ? 2 : 4;
+      var target = null;
+      if(e.key === 'ArrowRight'){ target = tiles[idx+1]; }
+      else if(e.key === 'ArrowLeft'){ target = tiles[idx-1]; }
+      else if(e.key === 'ArrowDown'){ target = tiles[idx+cols]; }
+      else if(e.key === 'ArrowUp'){ target = tiles[idx-cols]; }
+      if(target){
+        e.preventDefault();
+        tiles.forEach(function(t){ t.setAttribute('tabindex','-1'); });
+        target.setAttribute('tabindex','0');
+        target.focus();
+      }
+    };
+
+    var moreBtn = el('moreProviders');
+    if(shown.length >= filtered.length){
+      moreBtn.style.display = 'none';
+    } else {
+      moreBtn.style.display = '';
+      el('moreProvidersLabel').textContent = 'Volgende ' + Math.min(perPage, filtered.length - shown.length) + ' verstrekkers';
+    }
+  }
+
+  function selectProvider(name){
+    state.provider = name;
+    el('providerOther').value = '';
+    state.providerOther = '';
+    renderProviders();
+    announce(name + ' geselecteerd.');
+    updateNextEnabled();
+  }
+
+  el('providerSearch').addEventListener('input', function(){
+    state.providerPage = 0;
+    renderProviders();
+  });
+  el('providerSearchBtn').addEventListener('click', function(){ renderProviders(); });
+  el('moreProviders').addEventListener('click', function(){
+    state.providerPage += 1;
+    renderProviders();
+  });
+  el('providerOther').addEventListener('input', function(e){
+    state.providerOther = e.target.value;
+    if(e.target.value){
+      state.provider = null;
+      renderProviders();
+    }
+    updateNextEnabled();
+  });
+
+  // ---------- validation ----------
+  function setFieldError(fieldId, errId, hasError){
+    var field = el(fieldId);
+    var wrap = field.closest('.field');
+    field.classList.toggle('err', hasError);
+    if(wrap){ wrap.classList.toggle('invalid', hasError); }
+  }
+
+  function validateStep1(){
+    return !!(state.provider || state.providerOther.trim());
+  }
+  function validateStep2(){
+    var v = parseEuro(el('woningwaarde').value);
+    var ok = !isNaN(v) && v > 0;
+    setFieldError('woningwaarde', 'woningwaarde-err', !ok);
+    if(ok) state.woningwaarde = v;
+    return ok;
+  }
+  function validateStep3(){
+    var hoofdsom = parseEuro(el('hoofdsom').value);
+    var rente = parseDecimal(el('huidigeRente').value);
+    var rvp = parseDecimal(el('restRentevast').value);
+    var looptijd = parseDecimal(el('restLooptijd').value);
+
+    var okH = !isNaN(hoofdsom) && hoofdsom > 0;
+    var okR = !isNaN(rente) && rente > 0 && rente < 15;
+    var okRvp = !isNaN(rvp) && rvp >= 0 && rvp <= 30;
+    var okL = !isNaN(looptijd) && looptijd > 0 && looptijd <= 30;
+
+    setFieldError('hoofdsom', 'hoofdsom-err', !okH);
+    setFieldError('huidigeRente', 'rente-err', !okR);
+    setFieldError('restRentevast', 'rvp-err', !okRvp);
+    setFieldError('restLooptijd', 'looptijd-err', !okL);
+
+    if(okH) state.hoofdsom = hoofdsom;
+    if(okR) state.huidigeRente = rente;
+    if(okRvp) state.restRentevast = rvp;
+    if(okL) state.restLooptijd = looptijd;
+
+    var vormEl = document.querySelector('input[name="vorm"]:checked');
+    var nhgEl = document.querySelector('input[name="nhg"]:checked');
+    state.vorm = vormEl ? vormEl.value : 'annuiteit';
+    state.nhg = nhgEl ? nhgEl.value : 'nee';
+
+    return okH && okR && okRvp && okL;
+  }
+
+  function updateNextEnabled(){
+    var ok = true;
+    if(state.step === 1) ok = validateStep1();
+    el('nextBtn').disabled = !ok && state.step === 1;
+  }
+
+  // ---------- indicative rate table ----------
+  function marketRate(ltv, nhg, rvp){
+    // Indicatieve markrente-tabel (illustratief, geen live data)
+    var base = nhg === 'ja' ? 3.35 : (ltv <= 0.6 ? 3.45 : (ltv <= 0.9 ? 3.65 : 3.95));
+    var rvpAdj = rvp <= 10 ? 0 : (rvp <= 20 ? 0.15 : 0.35);
+    return Math.round((base + rvpAdj) * 100) / 100;
+  }
+
+  function monthlyPayment(principal, annualRatePct, vorm, totalYears){
+    var r = annualRatePct / 100 / 12;
+    var n = totalYears * 12;
+    if(vorm === 'aflossingsvrij'){
+      return principal * r;
+    }
+    if(vorm === 'lineair'){
+      var aflossing = principal / n;
+      var gemiddeldeSchuld = principal / 2;
+      return aflossing + gemiddeldeSchuld * r;
+    }
+    // annuiteit
+    if(r === 0) return principal / n;
+    return principal * (r / (1 - Math.pow(1 + r, -n)));
+  }
+
+  function estimatePenalty(hoofdsom, huidigeRente, marktRente, restRentevastJaren){
+    var diff = Math.max(0, huidigeRente - marktRente);
+    var jaren = Math.min(restRentevastJaren, 10);
+    // vereenvoudigde contante waarde-benadering
+    return Math.round(diff/100 * hoofdsom * jaren * 0.5);
+  }
+
+  function renderResults(){
+    var ltv = state.hoofdsom / state.woningwaarde;
+    var nieuweRente = marketRate(ltv, state.nhg, state.restRentevast);
+
+    var oudeMaand = monthlyPayment(state.hoofdsom, state.huidigeRente, state.vorm, state.restLooptijd);
+    var nieuweMaand = monthlyPayment(state.hoofdsom, nieuweRente, state.vorm, state.restLooptijd);
+    var maandVerschil = oudeMaand - nieuweMaand;
+
+    var boeterente = estimatePenalty(state.hoofdsom, state.huidigeRente, nieuweRente, state.restRentevast);
+    var vasteKosten = 1650; // notaris + advies + taxatie, indicatief
+    var totaleKosten = boeterente + vasteKosten;
+
+    var vergelijkJaren = Math.max(1, Math.min(state.restRentevast || 10, 10));
+    var brutoBesparing = maandVerschil * 12 * vergelijkJaren;
+    var nettoBesparing = brutoBesparing - totaleKosten;
+
+    var providerName = state.provider || state.providerOther || 'uw huidige verstrekker';
+
+    el('resultIntro').textContent = 'Op basis van uw gegevens bij ' + providerName +
+      ' en een indicatieve markrente van ' + nieuweRente.toLocaleString('nl-NL', {minimumFractionDigits:2}) + '% ' +
+      'ziet uw besparing er zo uit:';
+
+    var verdict = nettoBesparing > 0 ?
+      'Oversluiten kan indicatief lonen' :
+      'Oversluiten levert nu waarschijnlijk geen voordeel op';
+
+    var cards = el('resultCards');
+    cards.innerHTML =
+      '<div class="card highlight">' +
+        '<h3>' + verdict + '</h3>' +
+        '<div class="big">' + (nettoBesparing >= 0 ? '+' : '') + fmtEuro(nettoBesparing) + '</div>' +
+        '<p style="margin:.4rem 0 0;color:var(--muted);font-size:.85rem;">Netto, over ' + vergelijkJaren + ' jaar, na kosten oversluiten</p>' +
+      '</div>' +
+      '<div class="card">' +
+        '<h3>Maandlasten verschil</h3>' +
+        '<div class="big">' + (maandVerschil >= 0 ? '-' : '+') + fmtEuro2(Math.abs(maandVerschil)) + '</div>' +
+        '<p style="margin:.4rem 0 0;color:var(--muted);font-size:.85rem;">per maand ' + (maandVerschil >= 0 ? 'lager' : 'hoger') + '</p>' +
+      '</div>';
+
+    var body = el('breakdownBody');
+    body.innerHTML =
+      row('Rentepercentage', state.huidigeRente.toLocaleString('nl-NL', {minimumFractionDigits:2}) + '%', nieuweRente.toLocaleString('nl-NL', {minimumFractionDigits:2}) + '%') +
+      row('Bruto maandlasten', fmtEuro2(oudeMaand), fmtEuro2(nieuweMaand)) +
+      row('Geschatte boeterente (eenmalig)', '–', fmtEuro(boeterente)) +
+      row('Notaris, advies en taxatie (eenmalig)', '–', fmtEuro(vasteKosten));
+
+    document.querySelector('#breakdownTable tfoot')?.remove();
+    var tfoot = document.createElement('tfoot');
+    tfoot.innerHTML = '<tr><td>Netto besparing over ' + vergelijkJaren + ' jaar</td><td class="num">–</td><td class="num">' + fmtEuro(nettoBesparing) + '</td></tr>';
+    el('breakdownTable').appendChild(tfoot);
+
+    announce('Uw overzicht is berekend. ' + verdict + ': ' + fmtEuro(nettoBesparing) + ' netto.');
+  }
+
+  function row(label, a, b){
+    return '<tr><th scope="row">' + label + '</th><td class="num">' + a + '</td><td class="num">' + b + '</td></tr>';
+  }
+
+  // ---------- navigation ----------
+  function showStep(n){
+    for(var i=1;i<=4;i++){
+      el('step'+i).hidden = (i !== n);
+    }
+    state.step = n;
+    renderSteps();
+
+    var nextBtn = el('nextBtn');
+    var backBtn = el('backBtn');
+    var nav = el('navActions');
+
+    if(n === 4){
+      nav.hidden = true;
+      renderResults();
+    } else {
+      nav.hidden = false;
+      backBtn.textContent = n === 1 ? 'Terug naar begin' : 'Vorige stap';
+      nextBtn.textContent = n === 3 ? 'Bekijk mijn overzicht' : 'Verder naar stap ' + (n+1);
+      updateNextEnabled();
+    }
+
+    var heading = document.querySelector('#step'+n+' h1');
+    if(heading){ heading.setAttribute('tabindex','-1'); heading.focus(); }
+    announce('Stap ' + n + ' van 4: ' + stepLabels[n-1]);
+    window.scrollTo(0,0);
+  }
+
+  el('nextBtn').addEventListener('click', function(){
+    if(state.step === 1){
+      if(!validateStep1()){ announce('Kies een verstrekker of vul er een in om verder te gaan.'); return; }
+      showStep(2);
+    } else if(state.step === 2){
+      if(!validateStep2()) return;
+      showStep(3);
+    } else if(state.step === 3){
+      if(!validateStep3()) return;
+      showStep(4);
+    }
+  });
+
+  el('backBtn').addEventListener('click', function(){
+    if(state.step > 1){ showStep(state.step - 1); }
+  });
+
+  el('restartBtn').addEventListener('click', function(){
+    state.provider = null;
+    state.providerOther = '';
+    state.providerPage = 0;
+    el('providerOther').value = '';
+    el('providerSearch').value = '';
+    showStep(1);
+  });
+
+  // live-update next-button state while typing on step1
+  el('providerOther').addEventListener('input', updateNextEnabled);
+
+  // ---------- init ----------
+  renderProviders();
+  showStep(1);
+})();
+</script>
+</body>
+</html>
