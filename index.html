@@ -20,34 +20,33 @@
     --focus:#0b5a54;
     --radius:10px;
   }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --accent:#3fcabe;
-      --accent-dark:#2fa89d;
-      --accent-soft:#113a37;
-      --ink:#f1f3f6;
-      --muted:#c3c8d6;
-      --border:#3a3f4d;
-      --bg:#14161c;
-      --bg-alt:#1b1e26;
-      --danger:#ff8a80;
-      --danger-bg:#3a1d1b;
-      --focus:#3fcabe;
-    }
+  :root[data-contrast="high"]{
+    --accent:#000000;
+    --accent-dark:#000000;
+    --accent-soft:#ffffff;
+    --ink:#000000;
+    --muted:#000000;
+    --border:#000000;
+    --bg:#ffffff;
+    --bg-alt:#ffffff;
+    --danger:#000000;
+    --danger-bg:#ffffff;
+    --focus:#000000;
   }
-  :root[data-theme="dark"]{
-    --accent:#3fcabe;
-    --accent-dark:#2fa89d;
-    --accent-soft:#113a37;
-    --ink:#f1f3f6;
-    --muted:#c3c8d6;
-    --border:#3a3f4d;
-    --bg:#14161c;
-    --bg-alt:#1b1e26;
-    --danger:#ff8a80;
-    --danger-bg:#3a1d1b;
-    --focus:#3fcabe;
-  }
+  :root[data-contrast="high"] .btn-primary,
+  :root[data-contrast="high"] .search-row button,
+  :root[data-contrast="high"] .advisor-form button{color:#fff;}
+  :root[data-contrast="high"] .tile,
+  :root[data-contrast="high"] .card,
+  :root[data-contrast="high"] .disclaimer,
+  :root[data-contrast="high"] .search-row input,
+  :root[data-contrast="high"] .field input,
+  :root[data-contrast="high"] .field select,
+  :root[data-contrast="high"] .advisor-form input,
+  :root[data-contrast="high"] table.breakdown th,
+  :root[data-contrast="high"] table.breakdown td,
+  :root[data-contrast="high"] .radio-tile{border-width:2px;}
+  :root[data-contrast="high"] :focus-visible{outline-width:4px;}
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
@@ -75,10 +74,23 @@
     width:34px;height:34px;border-radius:8px;background:var(--accent);
     color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;
   }
-  .theme-toggle{
-    border:1px solid var(--border);background:var(--bg-alt);color:var(--ink);
-    border-radius:999px;padding:.4rem .9rem;cursor:pointer;font-size:.85rem;
+
+  .contrast-toggle{
+    display:inline-flex;align-items:center;gap:.6rem;background:none;border:none;cursor:pointer;
+    padding:.3rem;border-radius:999px;color:var(--ink);
   }
+  .contrast-toggle .icon{font-size:1.2rem;line-height:1;}
+  .contrast-toggle .switch{
+    width:40px;height:22px;border-radius:999px;background:var(--border);position:relative;
+    transition:background .15s;flex:none;
+  }
+  .contrast-toggle .switch::before{
+    content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+  .contrast-toggle[aria-pressed="true"] .switch{background:var(--accent);}
+  .contrast-toggle[aria-pressed="true"] .switch::before{transform:translateX(18px);}
+  .contrast-toggle .text{font-size:.85rem;font-weight:600;}
 
   .wrap{max-width:900px;margin:0 auto;padding:1.5rem 1.25rem 4rem;}
 
@@ -167,6 +179,7 @@
   .actions{
     display:flex;justify-content:space-between;gap:1rem;margin-top:2rem;flex-wrap:wrap;
   }
+  .actions[hidden]{display:none;}
   .btn{
     border-radius:999px;padding:.8rem 1.6rem;font-weight:800;cursor:pointer;
     letter-spacing:.03em;font-size:.85rem;text-transform:uppercase;border:2px solid transparent;
@@ -199,6 +212,26 @@
   }
   .disclaimer strong{display:block;margin-bottom:.3rem;}
 
+  .advisor-cta{
+    margin:1.75rem 0 0;padding:1.5rem;border-top:1px solid var(--border);
+    background:var(--bg-alt);border-radius:var(--radius);
+  }
+  .advisor-cta h2{margin:0 0 .9rem;font-size:1.05rem;}
+  .advisor-form{display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end;max-width:26rem;}
+  .advisor-form .field{margin:0;flex:1;min-width:9rem;max-width:none;}
+  .advisor-form label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.03em;}
+  .advisor-form input{
+    width:100%;padding:.65rem .8rem;border:1px solid var(--border);border-radius:var(--radius);
+    background:var(--bg);color:var(--ink);font-size:.95rem;text-transform:uppercase;
+  }
+  .advisor-form button{
+    background:var(--accent);color:#fff;border:none;border-radius:999px;
+    padding:.75rem 1.4rem;font-weight:800;cursor:pointer;font-size:.85rem;letter-spacing:.02em;
+    display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap;
+  }
+  .advisor-form button:hover{background:var(--accent-dark);}
+  .advisor-cta p{margin:1.1rem 0 0;color:var(--muted);font-size:.92rem;}
+
   .sr-only{
     position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
     clip:rect(0,0,0,0);white-space:nowrap;border:0;
@@ -212,7 +245,11 @@
 
 <header class="topbar">
   <div class="brand"><span class="mark" aria-hidden="true">M</span> Munt-bespaarcheck</div>
-  <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">Donkere modus</button>
+  <button type="button" class="contrast-toggle" id="contrastToggle" aria-pressed="false">
+    <span class="icon" aria-hidden="true">&#9680;</span>
+    <span class="switch" aria-hidden="true"></span>
+    <span class="text">Hoog contrast</span>
+  </button>
 </header>
 
 <div class="wrap">
@@ -326,7 +363,19 @@
 
       <div class="disclaimer" role="note">
         <strong>Let op: indicatieve berekening, geen financieel advies</strong>
-        Deze uitkomst is een indicatie op basis van door u ingevoerde gegevens en een gemiddelde markrente. Het is geen persoonlijk advies zoals bedoeld in de Wet op het financieel toezicht (Wft) en er kunnen geen rechten aan worden ontleend. Boeterente, notariskosten en de daadwerkelijke rente die u krijgt aangeboden kunnen afwijken. Neem voor een persoonlijk advies altijd contact op met een erkend hypotheekadviseur.
+        Deze uitkomst is een indicatie op basis van door u ingevoerde gegevens en het rentetarievenblad van MUNT Hypotheken van 19 november 2026. Andere geldverstrekkers kunnen afwijkende tarieven en voorwaarden hanteren. Het is geen persoonlijk advies zoals bedoeld in de Wet op het financieel toezicht (Wft) en er kunnen geen rechten aan worden ontleend. Boeterente, notariskosten en de daadwerkelijke rente die u krijgt aangeboden kunnen afwijken. Neem voor een persoonlijk advies altijd contact op met een erkend hypotheekadviseur.
+      </div>
+
+      <div class="advisor-cta">
+        <h2>Vind een adviseur bij u in de buurt</h2>
+        <form class="advisor-form" id="advisorForm">
+          <div class="field">
+            <label for="advisorPostcode">Uw postcode</label>
+            <input type="text" id="advisorPostcode" inputmode="text" placeholder="1234 AB" autocomplete="postal-code" maxlength="7">
+          </div>
+          <button type="submit">Zoek <span aria-hidden="true">›</span></button>
+        </form>
+        <p>Wilt u dit overzicht met iemand doornemen voordat u een keuze maakt? Neem dan <a href="#" id="advisorContactLink">contact op met een erkend hypotheekadviseur</a>.</p>
       </div>
 
       <div style="margin-top:1rem;">
@@ -395,18 +444,6 @@
     el('liveRegion').textContent = msg;
   }
 
-  // ---------- theme ----------
-  var themeToggle = el('themeToggle');
-  var savedTheme = null; // no localStorage: in-memory only for this visit
-  function applyTheme(mode){
-    document.documentElement.setAttribute('data-theme', mode);
-    themeToggle.setAttribute('aria-pressed', mode === 'dark' ? 'true' : 'false');
-    themeToggle.textContent = mode === 'dark' ? 'Lichte modus' : 'Donkere modus';
-  }
-  themeToggle.addEventListener('click', function(){
-    savedTheme = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
-    applyTheme(savedTheme);
-  });
 
   // ---------- step indicator ----------
   function renderSteps(){
@@ -560,11 +597,44 @@
   }
 
   // ---------- indicative rate table ----------
-  function marketRate(ltv, nhg, rvp){
-    // Indicatieve markrente-tabel (illustratief, geen live data)
-    var base = nhg === 'ja' ? 3.35 : (ltv <= 0.6 ? 3.45 : (ltv <= 0.9 ? 3.65 : 3.95));
-    var rvpAdj = rvp <= 10 ? 0 : (rvp <= 20 ? 0.15 : 0.35);
-    return Math.round((base + rvpAdj) * 100) / 100;
+  // Bron: rentetarievenblad MUNT Hypotheken, d.d. 19 november 2026 (publiek gepubliceerd).
+  // Kolommen: NHG, t/m 60% MW, t/m 80% MW, t/m 90% MW, >90% MW.
+  var RATE_TABLE = {
+    annuiteit: {
+      0:  [3.80, 3.80, 3.90, 4.00, 4.20],
+      5:  [4.31, 4.33, 4.37, 4.38, 4.40],
+      10: [4.36, 4.43, 4.49, 4.54, 4.56],
+      15: [4.51, 4.56, 4.58, 4.59, 4.64],
+      20: [4.56, 4.56, 4.59, 4.62, 4.68],
+      25: [4.58, 4.59, 4.63, 4.66, 4.75],
+      30: [4.58, 4.59, 4.63, 4.66, 4.75]
+    },
+    aflossingsvrij: {
+      0:  [4.15, 4.15, 4.25, 4.35, 4.55],
+      5:  [4.76, 4.78, 4.82, 4.83, 4.85],
+      10: [4.66, 4.73, 4.79, 4.84, 4.86],
+      15: [4.71, 4.76, 4.78, 4.79, 4.84],
+      20: [4.76, 4.76, 4.79, 4.82, 4.88],
+      25: [4.78, 4.79, 4.83, 4.86, 4.95],
+      30: [4.78, 4.79, 4.83, 4.86, 4.95]
+    }
+  };
+  var RATE_PERIODS = [0, 5, 10, 15, 20, 25, 30];
+
+  function nearestPeriod(jaren){
+    var best = RATE_PERIODS[0];
+    RATE_PERIODS.forEach(function(p){
+      if(Math.abs(p - jaren) < Math.abs(best - jaren)) best = p;
+    });
+    return best;
+  }
+
+  function marketRate(ltv, nhg, rvp, vorm){
+    var tabel = (vorm === 'aflossingsvrij') ? RATE_TABLE.aflossingsvrij : RATE_TABLE.annuiteit;
+    var periode = nearestPeriod(rvp);
+    var rij = tabel[periode];
+    var kolom = nhg === 'ja' ? 0 : (ltv <= 0.6 ? 1 : (ltv <= 0.8 ? 2 : (ltv <= 0.9 ? 3 : 4)));
+    return rij[kolom];
   }
 
   function monthlyPayment(principal, annualRatePct, vorm, totalYears){
@@ -592,7 +662,7 @@
 
   function renderResults(){
     var ltv = state.hoofdsom / state.woningwaarde;
-    var nieuweRente = marketRate(ltv, state.nhg, state.restRentevast);
+    var nieuweRente = marketRate(ltv, state.nhg, state.restRentevast, state.vorm);
 
     var oudeMaand = monthlyPayment(state.hoofdsom, state.huidigeRente, state.vorm, state.restLooptijd);
     var nieuweMaand = monthlyPayment(state.hoofdsom, nieuweRente, state.vorm, state.restLooptijd);
@@ -609,8 +679,8 @@
     var providerName = state.provider || state.providerOther || 'uw huidige verstrekker';
 
     el('resultIntro').textContent = 'Op basis van uw gegevens bij ' + providerName +
-      ' en een indicatieve markrente van ' + nieuweRente.toLocaleString('nl-NL', {minimumFractionDigits:2}) + '% ' +
-      'ziet uw besparing er zo uit:';
+      ' en een indicatieve rente van ' + nieuweRente.toLocaleString('nl-NL', {minimumFractionDigits:2}) + '% ' +
+      '(rentetarievenblad MUNT Hypotheken, 19 november 2026) ziet uw besparing er zo uit:';
 
     var verdict = nettoBesparing > 0 ?
       'Oversluiten kan indicatief lonen' :
@@ -693,6 +763,13 @@
     if(state.step > 1){ showStep(state.step - 1); }
   });
 
+  el('advisorForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var pc = el('advisorPostcode').value.trim();
+    announce(pc ? 'Adviseurs in de buurt van postcode ' + pc + ' worden gezocht.' : 'Vul uw postcode in om adviseurs bij u in de buurt te vinden.');
+  });
+  el('advisorContactLink').addEventListener('click', function(e){ e.preventDefault(); });
+
   el('restartBtn').addEventListener('click', function(){
     state.provider = null;
     state.providerOther = '';
@@ -704,6 +781,14 @@
 
   // live-update next-button state while typing on step1
   el('providerOther').addEventListener('input', updateNextEnabled);
+
+  // ---------- high contrast ----------
+  el('contrastToggle').addEventListener('click', function(){
+    var on = document.documentElement.getAttribute('data-contrast') === 'high';
+    document.documentElement.setAttribute('data-contrast', on ? 'normal' : 'high');
+    this.setAttribute('aria-pressed', on ? 'false' : 'true');
+    announce(on ? 'Hoog contrast uitgeschakeld.' : 'Hoog contrast ingeschakeld.');
+  });
 
   // ---------- init ----------
   renderProviders();
