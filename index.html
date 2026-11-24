@@ -521,6 +521,16 @@
     el('providerOther').value = '';
     state.providerOther = '';
     renderProviders();
+    // renderProviders() herbouwt de tegels (innerHTML), waardoor de browser
+    // de focus anders kwijtraakt; zet 'm terug op de nu geselecteerde tegel
+    // zodat toetsenbord- en schermlezergebruikers niet de weg kwijtraken.
+    var tiles = Array.prototype.slice.call(el('providerTiles').querySelectorAll('.tile'));
+    var selectedTile = tiles.filter(function(t){ return t.getAttribute('aria-pressed') === 'true'; })[0];
+    if(selectedTile){
+      tiles.forEach(function(t){ t.setAttribute('tabindex','-1'); });
+      selectedTile.setAttribute('tabindex','0');
+      selectedTile.focus();
+    }
     announce(name + ' geselecteerd.');
     updateNextEnabled();
   }
@@ -719,6 +729,8 @@
   }
 
   // ---------- navigation ----------
+  var hasNavigatedOnce = false;
+
   function showStep(n){
     for(var i=1;i<=4;i++){
       el('step'+i).hidden = (i !== n);
@@ -740,8 +752,14 @@
       updateNextEnabled();
     }
 
-    var heading = document.querySelector('#step'+n+' h1');
-    if(heading){ heading.setAttribute('tabindex','-1'); heading.focus(); }
+    // Verplaats focus naar de stapkop bij navigatie, maar niet bij het eerste
+    // laden van de pagina: anders springt de focus voorbij de skip-link en de
+    // contrastknop in de header, en vallen die uit de Tab-volgorde.
+    if(hasNavigatedOnce){
+      var heading = document.querySelector('#step'+n+' h1');
+      if(heading){ heading.setAttribute('tabindex','-1'); heading.focus(); }
+    }
+    hasNavigatedOnce = true;
     announce('Stap ' + n + ' van 4: ' + stepLabels[n-1]);
     window.scrollTo(0,0);
   }
